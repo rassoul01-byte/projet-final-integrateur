@@ -1,0 +1,25 @@
+gestion_etudiants/
+│
+├── backend/
+│   ├── main.py               # Point d'entrée FastAPI
+│   ├── database.py           # Connexion PostgreSQL
+│   ├── models.py             # Classes Python (POO)
+│   ├── schemas.py            # Schémas Pydantic
+│   └── routes/
+│       ├── etudiants.py      # Routes CRUD étudiants
+│       └── stats.py          # Routes statistiques
+│
+├── frontend/
+│   ├── index.html            # Interface principale
+│   ├── dashboard.html        # Dashboard Chart.js
+│   ├── style.css             # Styles globaux
+│   └── app.js                # Logique JavaScript
+│
+├── data/
+│   └── valides.json          # Données initiales (source secondaire)
+│
+├── README.md                 # Documentation du projet
+├── schema.sql                # Script de création de la base
+├── requirements.txt          # Dépendances Python
+├── .env                      # Variables d'environnement (non versionné)
+└── .gitignore                # Fichiers ignorés par Git
