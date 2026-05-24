@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Gestion Étudiants</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <h1>🎓 Gestion Étudiants</h1>
+    <nav>
+      <a href="index.html">📋 Étudiants</a>
+      <a href="dashboard.html" class="active">📊 Dashboard</a>
+    </nav>
+  </nav>
+
+  <div class="container">
+
+    <!-- KPI -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#2563eb;" id="kpi-total">—</div>
+        <div style="color:#64748b;margin-top:4px;">Total étudiants</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-actifs">—</div>
+        <div style="color:#64748b;margin-top:4px;">Actifs (DB)</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#d97706;" id="kpi-archives">—</div>
+        <div style="color:#64748b;margin-top:4px;">Archivés</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#7c3aed;" id="kpi-moyenne">—</div>
+        <div style="color:#64748b;margin-top:4px;">Moyenne globale</div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">📊 Étudiants par classe</div>
+        <canvas id="chart-classes"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Moyenne par classe</div>
+        <canvas id="chart-moyennes"></canvas>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 2 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">📚 Moyenne par matière</div>
+        <canvas id="chart-matieres"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">🏆 Top 10 meilleures moyennes</div>
+        <canvas id="chart-top"></canvas>
+      </div>
+    </div>
+
+    <!-- Tableau stats par classe -->
+    <div class="card">
+      <div class="card-title">📋 Statistiques détaillées par classe</div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Total</th>
+              <th>Moyenne</th>
+              <th>Meilleure</th>
+              <th>Plus basse</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-stats"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+  // =============================================================
+  // dashboard.js — Logique du tableau de bord
+  // =============================================================
+
+  const API = "http://localhost:8000/api/v1";
+
+  // Couleurs pour les graphiques
+  const COLORS = [
+    "#2563eb","#16a34a","#d97706","#dc2626","#7c3aed",
+    "#0891b2","#db2777","#65a30d","#ea580c","#0284c7",
+    "#9333ea","#15803d"
+  ];
+
+  // -------------------------------------------------------------
+  // Chargement au démarrage
+  // -------------------------------------------------------------
+  document.addEventListener("DOMContentLoaded", () => {
+    chargerKPI();
+    chargerClasses();
+    chargerMatieres();
+    chargerTop();
+  });
+
+  // -------------------------------------------------------------
+  // KPI globaux
+  // -------------------------------------------------------------
+  async function chargerKPI() {
+    const res  = await fetch(`${API}/stats/globales`);
+    const data = await res.json();
+
+    document.getElementById("kpi-total").textContent   = data.total_etudiants;
+    document.getElementById("kpi-actifs").textContent  = data.total_actifs;
+    document.getElementById("kpi-archives").textContent= data.total_archives;
+    document.getElementById("kpi-moyenne").textContent = data.moyenne_globale;
+  }
+
+  // -------------------------------------------------------------
+  // Graphiques par classe
+  // -------------------------------------------------------------
+  async function chargerClasses() {
+    const res    = await fetch(`${API}/stats/classes`);
+    const data   = await res.json();
+    const labels = data.map(c => c.classe);
+
+    // Graphique — nombre d'étudiants par classe
+    new Chart(document.getElementById("chart-classes"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Nombre d'étudiants",
+          data: data.map(c => c.total),
+          backgroundColor: COLORS,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Graphique — moyenne par classe
+    new Chart(document.getElementById("chart-moyennes"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Moyenne",
+          data: data.map(c => c.moyenne),
+          backgroundColor: COLORS,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 20 } }
+      }
+    });
+
+    // Tableau stats détaillées
+    const tbody = document.getElementById("tbody-stats");
+    tbody.innerHTML = data.map(c => `
+      <tr>
+        <td><strong>${c.classe}</strong></td>
+        <td>${c.total}</td>
+        <td><strong style="color:#2563eb;">${c.moyenne}</strong></td>
+        <td style="color:#16a34a;">${c.meilleure}</td>
+        <td style="color:#dc2626;">${c.plus_basse}</td>
+      </tr>
+    `).join("");
+  }
+
+  // -------------------------------------------------------------
+  // Graphique — moyenne par matière
+  // -------------------------------------------------------------
+  async function chargerMatieres() {
+    const res  = await fetch(`${API}/stats/matieres`);
+    const data = await res.json();
+
+    new Chart(document.getElementById("chart-matieres"), {
+      type: "radar",
+      data: {
+        labels: data.map(m => m.matiere),
+        datasets: [{
+          label: "Moyenne",
+          data: data.map(m => m.moyenne),
+          backgroundColor: "rgba(37,99,235,0.15)",
+          borderColor: "#2563eb",
+          borderWidth: 2,
+          pointBackgroundColor: "#2563eb",
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { r: { beginAtZero: true, max: 20 } }
+      }
+    });
+  }
+
+  // -------------------------------------------------------------
+  // Graphique — Top 10 meilleures moyennes
+  // -------------------------------------------------------------
+  async function chargerTop() {
+    const res  = await fetch(`${API}/stats/top-moyennes`);
+    const data = await res.json();
+
+    new Chart(document.getElementById("chart-top"), {
+      type: "bar",
+      data: {
+        labels: data.map(e => `${e.prenom} ${e.nom}`),
+        datasets: [{
+          label: "Moyenne",
+          data: data.map(e => e.moyenne_generale),
+          backgroundColor: "#7c3aed",
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, max: 20 } }
+      }
+    });
+  }
+  </script>
+
+</body>
+</html>

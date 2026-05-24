@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestion Étudiants</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =========================================================
+       NAVBAR
+       ========================================================= -->
+  <nav class="navbar">
+    <h1>🎓 Gestion Étudiants</h1>
+    <nav>
+      <a href="index.html" class="active">📋 Étudiants</a>
+      <a href="dashboard.html">📊 Dashboard</a>
+    </nav>
+  </nav>
+
+  <!-- =========================================================
+       CONTENU PRINCIPAL
+       ========================================================= -->
+  <div class="container">
+
+    <!-- Filtres et recherche -->
+    <div class="card">
+      <div class="card-title">🔍 Recherche et filtres</div>
+      <div class="filters">
+        <input type="text" id="search" placeholder="Rechercher nom, prénom, numéro, code..." />
+        <select id="filter-classe">
+          <option value="">Toutes les classes</option>
+        </select>
+        <select id="filter-source">
+          <option value="">Toutes les sources</option>
+          <option value="DB">DB</option>
+          <option value="JSON">JSON</option>
+        </select>
+        <select id="par-page">
+          <option value="5">5 par page</option>
+          <option value="10">10 par page</option>
+          <option value="20">20 par page</option>
+          <option value="50">50 par page</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('modal-ajout')">
+          ➕ Ajouter
+        </button>
+        <button class="btn btn-warning" onclick="showArchives()">
+          🗄️ Archives
+        </button>
+      </div>
+    </div>
+
+    <!-- Tableau des étudiants -->
+    <div class="card">
+      <div class="card-title" id="table-title">📋 Liste des étudiants</div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all" /></th>
+              <th>Numéro</th>
+              <th>Code</th>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Classe</th>
+              <th>Moyenne</th>
+              <th>Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="loader" class="loader">Chargement...</div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       MODAL — AJOUTER UN ÉTUDIANT
+       ========================================================= -->
+  <div class="modal-overlay" id="modal-ajout">
+    <div class="modal">
+      <h2>➕ Ajouter un étudiant</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Numéro *</label>
+          <input type="text" id="add-numero" placeholder="Ex: ABC123" />
+        </div>
+        <div class="form-group">
+          <label>Code *</label>
+          <input type="text" id="add-code" placeholder="Ex: AAD005" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input type="text" id="add-prenom" />
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" id="add-nom" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de naissance</label>
+          <input type="date" id="add-date" />
+        </div>
+        <div class="form-group">
+          <label>Classe *</label>
+          <select id="add-classe"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Moyenne générale</label>
+        <input type="number" id="add-moyenne" step="0.01" min="0" max="20" />
+      </div>
+      <div style="display:flex; gap:12px; margin-top:16px;">
+        <button class="btn btn-primary" onclick="ajouterEtudiant()">💾 Enregistrer</button>
+        <button class="btn" onclick="closeModal('modal-ajout')"
+          style="background:#e2e8f0;">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL — DÉTAIL ÉTUDIANT
+       ========================================================= -->
+  <div class="modal-overlay" id="modal-detail">
+    <div class="modal">
+      <h2>👤 Détail de l'étudiant</h2>
+      <div id="detail-content"></div>
+      <button class="btn" onclick="closeModal('modal-detail')"
+        style="background:#e2e8f0; margin-top:16px;">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

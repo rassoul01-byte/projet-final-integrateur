@@ -1,0 +1,315 @@
+/* =============================================================
+   style.css — Styles globaux de l'application
+   ============================================================= */
+
+/* -------------------------------------------------------------
+   Variables CSS — couleurs et espacements
+   ------------------------------------------------------------- */
+:root {
+  --primary:     #2563eb;
+  --primary-dark:#1d4ed8;
+  --success:     #16a34a;
+  --danger:      #dc2626;
+  --warning:     #d97706;
+  --bg:          #f1f5f9;
+  --white:       #ffffff;
+  --text:        #1e293b;
+  --text-light:  #64748b;
+  --border:      #e2e8f0;
+  --shadow:      0 1px 3px rgba(0,0,0,0.1);
+  --radius:      8px;
+}
+
+/* -------------------------------------------------------------
+   Reset et base
+   ------------------------------------------------------------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* -------------------------------------------------------------
+   Navbar
+   ------------------------------------------------------------- */
+.navbar {
+  background: var(--primary);
+  color: white;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+}
+
+.navbar h1 { font-size: 18px; font-weight: 600; }
+
+.navbar nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 14px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.navbar nav a:hover,
+.navbar nav a.active { opacity: 1; font-weight: 600; }
+
+/* -------------------------------------------------------------
+   Container principal
+   ------------------------------------------------------------- */
+.container {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* -------------------------------------------------------------
+   Carte
+   ------------------------------------------------------------- */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 8px;
+}
+
+/* -------------------------------------------------------------
+   Barre de recherche et filtres
+   ------------------------------------------------------------- */
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filters input,
+.filters select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filters input:focus,
+.filters select:focus { border-color: var(--primary); }
+
+.filters input[type="text"] { flex: 1; min-width: 200px; }
+
+/* -------------------------------------------------------------
+   Boutons
+   ------------------------------------------------------------- */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger  { background: var(--danger);  color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* -------------------------------------------------------------
+   Tableau
+   ------------------------------------------------------------- */
+.table-wrapper { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--primary);
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+tbody tr:hover { background: #f8fafc; }
+
+tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+/* -------------------------------------------------------------
+   Badge source DB / JSON
+   ------------------------------------------------------------- */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-db   { background: #dbeafe; color: #1d4ed8; }
+.badge-json { background: #fef9c3; color: #92400e; }
+
+/* -------------------------------------------------------------
+   Pagination
+   ------------------------------------------------------------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.pagination button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.pagination button.active { background: var(--primary); color: white; border-color: var(--primary); }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pagination .info { color: var(--text-light); font-size: 13px; margin-left: auto; }
+
+/* -------------------------------------------------------------
+   Modal
+   ------------------------------------------------------------- */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal h2 { font-size: 18px; margin-bottom: 16px; }
+
+/* -------------------------------------------------------------
+   Formulaire
+   ------------------------------------------------------------- */
+.form-group { margin-bottom: 14px; }
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-light);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus { border-color: var(--primary); }
+
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+
+/* -------------------------------------------------------------
+   Notifications toast
+   ------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--text);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 200;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--danger); }
+
+/* -------------------------------------------------------------
+   Loader
+   ------------------------------------------------------------- */
+.loader {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-light);
+}
+
+/* -------------------------------------------------------------
+   Cellule éditable (double-clic)
+   ------------------------------------------------------------- */
+.editable:hover {
+  background: #eff6ff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+td input.edit-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+}
