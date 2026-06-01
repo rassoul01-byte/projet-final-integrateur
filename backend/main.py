@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from routes import etudiants, stats
+from routes import etudiants, stats, invalides
 import os
 
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 # Routes API
 app.include_router(etudiants.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
+app.include_router(invalides.router, prefix="/api/v1")
 
 # Chemin vers le frontend
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -48,3 +49,9 @@ def root():
 @app.get("/dashboard")
 def dashboard():
     return FileResponse(os.path.join(FRONTEND_DIR, "dashboard.html"))
+
+
+# Page invalides
+@app.get("/invalides")
+def invalides_page():
+    return FileResponse(os.path.join(FRONTEND_DIR, "invalides.html"))

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Données Invalides — Gestion Étudiants</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <h1>🎓 Gestion Étudiants</h1>
+    <nav>
+      <a href="/">📋 Étudiants</a>
+      <a href="/dashboard">📊 Dashboard</a>
+      <a href="/invalides" class="active">⚠️ Invalides</a>
+    </nav>
+  </nav>
+
+  <div class="container">
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#dc2626;" id="kpi-total">—</div>
+        <div style="color:#64748b;margin-top:4px;">Total invalides</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#d97706;" id="kpi-non-corriges">—</div>
+        <div style="color:#64748b;margin-top:4px;">Non corrigés</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-corriges">—</div>
+        <div style="color:#64748b;margin-top:4px;">Corrigés / Transférés</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚠️ Liste des données invalides</div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Code</th>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Classe</th>
+              <th>Erreur détectée</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="loader" class="loader">Chargement...</div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="modal-correction">
+    <div class="modal">
+      <h2>✏️ Corriger l'étudiant</h2>
+      <input type="hidden" id="edit-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Numéro *</label>
+          <input type="text" id="edit-numero" />
+        </div>
+        <div class="form-group">
+          <label>Code</label>
+          <input type="text" id="edit-code" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" id="edit-prenom" />
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" id="edit-nom" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de naissance</label>
+          <input type="date" id="edit-date" />
+        </div>
+        <div class="form-group">
+          <label>Classe</label>
+          <input type="text" id="edit-classe" />
+        </div>
+      </div>
+      <div id="erreur-info" style="background:#fef2f2;border:1px solid #fca5a5;
+        border-radius:8px;padding:12px;margin:12px 0;font-size:13px;color:#dc2626;">
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="sauvegarderCorrection()">💾 Sauvegarder</button>
+        <button class="btn btn-success" onclick="transferer()">✅ Corriger et transférer</button>
+        <button class="btn" onclick="closeModal('modal-correction')"
+          style="background:#e2e8f0;">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const API = "http://localhost:8000/api/v1";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    chargerInvalides();
+  });
+
+  async function chargerInvalides() {
+    const loader = document.getElementById("loader");
+    loader.style.display = "block";
+
+    try {
+      const res  = await fetch(`${API}/invalides`);
+      const data = await res.json();
+
+      const total     = data.length;
+      const corriges  = data.filter(d => d.corrige).length;
+      const nonCorrig = total - corriges;
+
+      document.getElementById("kpi-total").textContent        = total;
+      document.getElementById("kpi-non-corriges").textContent = nonCorrig;
+      document.getElementById("kpi-corriges").textContent     = corriges;
+
+      const tbody = document.getElementById("tbody");
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;
+          padding:30px;color:#64748b;">Aucune donnée invalide</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(e => `
+        <tr style="${e.corrige ? 'background:#f0fdf4;' : ''}">
+          <td>${e.numero}</td>
+          <td>${e.code}</td>
+          <td>${e.prenom}</td>
+          <td>${e.nom}</td>
+          <td>${e.classe}</td>
+          <td style="color:#dc2626;font-size:12px;max-width:250px;">
+            ${e.erreurs || "—"}
+          </td>
+          <td>
+            ${e.corrige
+              ? '<span class="badge badge-db">✅ Corrigé</span>'
+              : '<span class="badge" style="background:#fee2e2;color:#dc2626;">⚠️ À corriger</span>'
+            }
+          </td>
+          <td>
+            ${!e.corrige ? `
+              <button class="btn btn-warning btn-sm"
+                onclick="ouvrirCorrection(${e.id})">
+                ✏️ Corriger
+              </button>
+            ` : `
+              <button class="btn btn-success btn-sm"
+                onclick="transfererDirect(${e.id})">
+                ↗️ Transférer
+              </button>
+            `}
+          </td>
+        </tr>
+      `).join("");
+
+    } catch(e) {
+      console.error(e);
+      showToast("Erreur chargement", "error");
+    } finally {
+      loader.style.display = "none";
+    }
+  }
+
+  async function ouvrirCorrection(id) {
+  try {
+    const res = await fetch(`${API}/invalides`);
+    const data = await res.json();
+    const etudiant = data.find(e => e.id === id);
+    
+    document.getElementById("edit-id").value      = etudiant.id;
+    document.getElementById("edit-numero").value  = etudiant.numero;
+    document.getElementById("edit-code").value    = etudiant.code;
+    document.getElementById("edit-prenom").value  = etudiant.prenom;
+    document.getElementById("edit-nom").value     = etudiant.nom;
+    document.getElementById("edit-date").value    = etudiant.date_naissance || "";
+    document.getElementById("edit-classe").value  = etudiant.classe;
+    document.getElementById("erreur-info").innerHTML = "⚠️ Erreur : " + (etudiant.erreurs || "—");
+    openModal("modal-correction");
+  } catch(e) {
+    showToast("Erreur chargement", "error");
+  }
+}
+  async function sauvegarderCorrection() {
+    const id   = document.getElementById("edit-id").value;
+    const data = getDonnees();
+    try {
+      const res = await fetch(`${API}/invalides/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error();
+      showToast("Correction sauvegardée ✓", "success");
+      closeModal("modal-correction");
+      chargerInvalides();
+    } catch {
+      showToast("Erreur sauvegarde", "error");
+    }
+  }
+
+  async function transferer() {
+    const id   = document.getElementById("edit-id").value;
+    const data = getDonnees();
+    try {
+      await fetch(`${API}/invalides/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const res    = await fetch(`${API}/invalides/${id}/transferer`, { method: "POST" });
+      const result = await res.json();
+      if (!res.ok) { showToast(result.detail || "Erreur transfert", "error"); return; }
+      showToast("Étudiant transféré vers la base ✓", "success");
+      closeModal("modal-correction");
+      chargerInvalides();
+    } catch {
+      showToast("Erreur transfert", "error");
+    }
+  }
+
+  async function transfererDirect(id) {
+    if (!confirm("Transférer cet étudiant vers la base principale ?")) return;
+    try {
+      const res    = await fetch(`${API}/invalides/${id}/transferer`, { method: "POST" });
+      const result = await res.json();
+      if (!res.ok) { showToast(result.detail || "Erreur", "error"); return; }
+      showToast("Transféré avec succès ✓", "success");
+      chargerInvalides();
+    } catch {
+      showToast("Erreur transfert", "error");
+    }
+  }
+
+  function getDonnees() {
+    return {
+      numero:         document.getElementById("edit-numero").value.trim(),
+      code:           document.getElementById("edit-code").value.trim(),
+      prenom:         document.getElementById("edit-prenom").value.trim(),
+      nom:            document.getElementById("edit-nom").value.trim(),
+      date_naissance: document.getElementById("edit-date").value || null,
+      classe:         document.getElementById("edit-classe").value.trim(),
+    };
+  }
+
+  function openModal(id)  { document.getElementById(id).classList.add("open"); }
+  function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal-overlay")) e.target.classList.remove("open");
+  });
+
+  function showToast(message, type = "success") {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+  </script>
+
+</body>
+</html>
