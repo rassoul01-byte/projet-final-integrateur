@@ -4,17 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Gestion Étudiants</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/static/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <h1>🎓 Gestion Étudiants</h1>
+    <h1> Gestion Étudiants</h1>
     <nav>
-      <a href="index.html">📋 Étudiants</a>
-      <a href="dashboard.html" class="active">📊 Dashboard</a>
+      <a href="index.html"
+      $=°öl_ièu-y('"') Étudiants</a>
+      <a href="dashboard.html" class="active"> Dashboard</a>
     </nav>
   </nav>
 
@@ -43,11 +44,11 @@
     <!-- Graphiques ligne 1 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
       <div class="card">
-        <div class="card-title">📊 Étudiants par classe</div>
+        <div class="card-title"> Étudiants par classe</div>
         <canvas id="chart-classes"></canvas>
       </div>
       <div class="card">
-        <div class="card-title">📈 Moyenne par classe</div>
+        <div class="card-title"> Moyenne par classe</div>
         <canvas id="chart-moyennes"></canvas>
       </div>
     </div>
@@ -55,18 +56,18 @@
     <!-- Graphiques ligne 2 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
       <div class="card">
-        <div class="card-title">📚 Moyenne par matière</div>
+        <div class="card-title"> Moyenne par matière</div>
         <canvas id="chart-matieres"></canvas>
       </div>
       <div class="card">
-        <div class="card-title">🏆 Top 10 meilleures moyennes</div>
+        <div class="card-title"> Top 10 meilleures moyennes</div>
         <canvas id="chart-top"></canvas>
       </div>
     </div>
 
     <!-- Tableau stats par classe -->
     <div class="card">
-      <div class="card-title">📋 Statistiques détaillées par classe</div>
+      <div class="card-title"> Statistiques détaillées par classe</div>
       <div class="table-wrapper">
         <table>
           <thead>

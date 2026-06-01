@@ -4,48 +4,47 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from routes import etudiants, stats
+import os
 
-# Création de l'instance FastAPI avec métadonnées
 app = FastAPI(
     title="Gestion Étudiants API",
     description="API REST pour la gestion des données étudiants",
     version="1.0.0"
 )
 
-# -------------------------------------------------------------
-# Middleware CORS
-# Permet au frontend (HTML/JS) d'appeler l'API sans blocage
-# -------------------------------------------------------------
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # Autoriser toutes les origines
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],       # GET, POST, PUT, PATCH, DELETE
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -------------------------------------------------------------
-# Enregistrement des routeurs
-# Chaque routeur gère un groupe de routes
-# -------------------------------------------------------------
+# Routes API
 app.include_router(etudiants.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
 
+# Chemin vers le frontend
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
-# -------------------------------------------------------------
-# Route : GET /health
-# Vérification que le serveur est bien démarré
-# -------------------------------------------------------------
+# Servir les fichiers statiques (CSS, JS)
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+# Health check
 @app.get("/health")
 def health():
     return {"status": "ok", "message": "API opérationnelle"}
 
-
-# -------------------------------------------------------------
-# Route : GET /
-# Page d'accueil de l'API
-# -------------------------------------------------------------
+# Page principale — étudiants
 @app.get("/")
 def root():
-    return {"message": "Bienvenue sur l'API Gestion Étudiants"}
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+# Page dashboard
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse(os.path.join(FRONTEND_DIR, "dashboard.html"))

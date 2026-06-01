@@ -112,7 +112,7 @@ async function chargerEtudiants() {
 
     // Titre du tableau
     document.getElementById("table-title").textContent =
-      `📋 Liste des étudiants (${data.total} au total)`;
+      ` Liste des étudiants (${data.total} au total)`;
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:red;">
@@ -225,7 +225,7 @@ async function voirDetail(id) {
         <tr><td style="color:#64748b;">Moyenne générale</td>
             <td><strong style="color:#2563eb;">${e.moyenne_generale}</strong></td></tr>
       </table>
-      <div class="card-title">📚 Notes par matière</div>
+      <div class="card-title"> Notes par matière</div>
       <table style="width:100%;font-size:13px;">
         <thead>
           <tr style="background:#f1f5f9;">
@@ -382,7 +382,7 @@ async function showArchives() {
         <td><span class="badge badge-db">DB</span></td>
         <td>
           <button class="btn btn-success btn-sm"
-            onclick="restaurerEtudiant(${e.id})">♻️ Restaurer</button>
+            onclick="restaurerEtudiant(${e.id})"> Restaurer</button>
         </td>
       </tr>
     `).join("");

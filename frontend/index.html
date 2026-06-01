@@ -4,29 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestion Étudiants</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 
-  <!-- =========================================================
-       NAVBAR
-       ========================================================= -->
+  <!-- NAVBAR -->
   <nav class="navbar">
-    <h1>🎓 Gestion Étudiants</h1>
+    <h1> Gestion Étudiants</h1>
     <nav>
-      <a href="index.html" class="active">📋 Étudiants</a>
-      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="index.html" class="active"> Étudiants</a>
+      <a href="dashboard.html"> Dashboard</a>
     </nav>
   </nav>
 
-  <!-- =========================================================
-       CONTENU PRINCIPAL
-       ========================================================= -->
+  <!-- CONTENU PRINCIPAL-->
   <div class="container">
 
     <!-- Filtres et recherche -->
     <div class="card">
-      <div class="card-title">🔍 Recherche et filtres</div>
+      <div class="card-title"> Recherche et filtres</div>
       <div class="filters">
         <input type="text" id="search" placeholder="Rechercher nom, prénom, numéro, code..." />
         <select id="filter-classe">
@@ -44,17 +40,17 @@
           <option value="50">50 par page</option>
         </select>
         <button class="btn btn-primary" onclick="openModal('modal-ajout')">
-          ➕ Ajouter
+          Ajouter
         </button>
         <button class="btn btn-warning" onclick="showArchives()">
-          🗄️ Archives
+           Archives
         </button>
       </div>
     </div>
 
     <!-- Tableau des étudiants -->
     <div class="card">
-      <div class="card-title" id="table-title">📋 Liste des étudiants</div>
+      <div class="card-title" id="table-title"> Liste des étudiants</div>
       <div class="table-wrapper">
         <table>
           <thead>
@@ -86,7 +82,7 @@
        ========================================================= -->
   <div class="modal-overlay" id="modal-ajout">
     <div class="modal">
-      <h2>➕ Ajouter un étudiant</h2>
+      <h2> Ajouter un étudiant</h2>
       <div class="form-row">
         <div class="form-group">
           <label>Numéro *</label>
@@ -122,7 +118,7 @@
         <input type="number" id="add-moyenne" step="0.01" min="0" max="20" />
       </div>
       <div style="display:flex; gap:12px; margin-top:16px;">
-        <button class="btn btn-primary" onclick="ajouterEtudiant()">💾 Enregistrer</button>
+        <button class="btn btn-primary" onclick="ajouterEtudiant()"> Enregistrer</button>
         <button class="btn" onclick="closeModal('modal-ajout')"
           style="background:#e2e8f0;">Annuler</button>
       </div>
@@ -144,6 +140,6 @@
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
-  <script src="app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
