@@ -14,31 +14,40 @@
     <h1> Gestion Étudiants</h1>
     <nav>
       <a href="/"> Étudiants</a>
-      <a href="dashboard.html" class="active"> Dashboard</a>
+      <a href="/dashboard" class="active">📊 Dashboard</a>
+      <a href="/invalides">⚠️ Invalides</a>
     </nav>
   </nav>
 
   <div class="container">
 
     <!-- KPI -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
-      <div class="card" style="text-align:center;">
-        <div style="font-size:32px;font-weight:700;color:#2563eb;" id="kpi-total">—</div>
-        <div style="color:#64748b;margin-top:4px;">Total étudiants</div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-actifs">—</div>
-        <div style="color:#64748b;margin-top:4px;">Actifs (DB)</div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <div style="font-size:32px;font-weight:700;color:#d97706;" id="kpi-archives">—</div>
-        <div style="color:#64748b;margin-top:4px;">Archivés</div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <div style="font-size:32px;font-weight:700;color:#7c3aed;" id="kpi-moyenne">—</div>
-        <div style="color:#64748b;margin-top:4px;">Moyenne globale</div>
-      </div>
-    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;">
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#2563eb;" id="kpi-total">—</div>
+    <div style="color:#64748b;margin-top:4px;">Total données</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-actifs">—</div>
+    <div style="color:#64748b;margin-top:4px;">Source DB</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#0891b2;" id="kpi-csv">—</div>
+    <div style="color:#64748b;margin-top:4px;">Source CSV</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-valides">—</div>
+    <div style="color:#64748b;margin-top:4px;">Données valides</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#dc2626;" id="kpi-invalides">—</div>
+    <div style="color:#64748b;margin-top:4px;">Données invalides</div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:32px;font-weight:700;color:#d97706;" id="kpi-archives">—</div>
+    <div style="color:#64748b;margin-top:4px;">Archivés</div>
+  </div>
+</div>
 
     <!-- Graphiques ligne 1 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
@@ -113,15 +122,20 @@
   // KPI globaux
   // -------------------------------------------------------------
   async function chargerKPI() {
-    const res  = await fetch(`${API}/stats/globales`);
-    const data = await res.json();
+  const res  = await fetch(`${API}/stats/globales`);
+  const data = await res.json();
 
-    document.getElementById("kpi-total").textContent   = data.total_etudiants;
-    document.getElementById("kpi-actifs").textContent  = data.total_actifs;
-    document.getElementById("kpi-archives").textContent= data.total_archives;
-    document.getElementById("kpi-moyenne").textContent = data.moyenne_globale;
-  }
+  const resInv  = await fetch(`${API}/invalides`);
+  const invalides = await resInv.json();
 
+  document.getElementById("kpi-total").textContent    = data.total_etudiants + invalides.length;
+  document.getElementById("kpi-actifs").textContent   = data.total_actifs;
+  document.getElementById("kpi-csv").textContent      = invalides.length;
+  document.getElementById("kpi-valides").textContent  = data.total_actifs;
+  document.getElementById("kpi-invalides").textContent= invalides.length;
+  document.getElementById("kpi-archives").textContent = data.total_archives;
+  document.getElementById("kpi-moyenne").textContent  = data.moyenne_globale;
+}
   // -------------------------------------------------------------
   // Graphiques par classe
   // -------------------------------------------------------------

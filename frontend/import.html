@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import CSV — Gestion Étudiants</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <h1>🎓 Gestion Étudiants</h1>
+    <nav>
+      <a href="/">📋 Étudiants</a>
+      <a href="/dashboard">📊 Dashboard</a>
+      <a href="/import" class="active">📥 Import CSV</a>
+      <a href="/invalides">⚠️ Invalides</a>
+    </nav>
+  </nav>
+
+  <div class="container">
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#0891b2;" id="kpi-total">—</div>
+        <div style="color:#64748b;margin-top:4px;">Total CSV</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#16a34a;" id="kpi-importes">—</div>
+        <div style="color:#64748b;margin-top:4px;">Déjà importés</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;font-weight:700;color:#d97706;" id="kpi-restants">—</div>
+        <div style="color:#64748b;margin-top:4px;">Non importés</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📥 Données CSV — Sélectionner et importer</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-primary" onclick="toutSelectionner()">☑️ Tout sélectionner</button>
+        <button class="btn" onclick="toutDeselectionner()" style="background:#e2e8f0;">⬜ Tout désélectionner</button>
+        <button class="btn btn-success" onclick="importerSelectionnes()">📥 Importer vers la base</button>
+        <span id="selection-info" style="color:#64748b;font-size:13px;margin-left:auto;">0 sélectionné(s)</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all" onchange="toggleTout(this)" /></th>
+              <th>Numéro</th>
+              <th>Code</th>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Classe</th>
+              <th>Source</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="loader" class="loader">Chargement...</div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const API = "http://localhost:8000/api/v1";
+  let donneesCSV = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    chargerCSV();
+  });
+
+  async function chargerCSV() {
+    const loader = document.getElementById("loader");
+    loader.style.display = "block";
+
+    try {
+      const res  = await fetch(`${API}/csv`);
+      donneesCSV = await res.json();
+
+      const total    = donneesCSV.length;
+      const importes = donneesCSV.filter(e => e.deja_importe).length;
+      const restants = total - importes;
+
+      document.getElementById("kpi-total").textContent    = total;
+      document.getElementById("kpi-importes").textContent = importes;
+      document.getElementById("kpi-restants").textContent = restants;
+
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = donneesCSV.map((e, i) => `
+        <tr id="row-${i}" style="${e.deja_importe ? 'background:#f0fdf4;opacity:0.7;' : ''}">
+          <td>
+            <input type="checkbox" class="row-check" value="${i}"
+              ${e.deja_importe ? 'disabled' : ''}
+              onchange="majSelection()" />
+          </td>
+          <td>${e.numero}</td>
+          <td>${e.code}</td>
+          <td>${e.prenom}</td>
+          <td>${e.nom}</td>
+          <td>${e.classe}</td>
+          <td><span class="badge" style="background:#fef9c3;color:#92400e;">JSON</span></td>
+          <td>
+            ${e.deja_importe
+              ? '<span class="badge badge-db">✅ Importé</span>'
+              : '<span class="badge" style="background:#fee2e2;color:#dc2626;">⏳ Non importé</span>'
+            }
+          </td>
+        </tr>
+      `).join("");
+
+    } catch(e) {
+      showToast("Erreur chargement CSV", "error");
+    } finally {
+      loader.style.display = "none";
+    }
+  }
+
+  function majSelection() {
+    const coches = document.querySelectorAll(".row-check:checked").length;
+    document.getElementById("selection-info").textContent = `${coches} sélectionné(s)`;
+  }
+
+  function toutSelectionner() {
+    document.querySelectorAll(".row-check:not(:disabled)").forEach(cb => cb.checked = true);
+    majSelection();
+  }
+
+  function toutDeselectionner() {
+    document.querySelectorAll(".row-check").forEach(cb => cb.checked = false);
+    majSelection();
+  }
+
+  function toggleTout(checkbox) {
+    document.querySelectorAll(".row-check:not(:disabled)").forEach(cb => {
+      cb.checked = checkbox.checked;
+    });
+    majSelection();
+  }
+
+  async function importerSelectionnes() {
+    const coches = document.querySelectorAll(".row-check:checked");
+    if (coches.length === 0) {
+      showToast("Sélectionnez au moins un étudiant", "error");
+      return;
+    }
+
+    const selectionnes = Array.from(coches).map(cb => donneesCSV[parseInt(cb.value)]);
+    let succes = 0;
+    let erreurs = 0;
+
+    for (const e of selectionnes) {
+      try {
+        const res = await fetch(`${API}/etudiants`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numero:          e.numero,
+            code:            e.code,
+            prenom:          e.prenom,
+            nom:             e.nom,
+            date_naissance:  e.date_naissance || null,
+            classe:          e.classe,
+            moyenne_generale: null,
+            matieres:        [],
+          }),
+        });
+        if (res.ok) succes++;
+        else erreurs++;
+      } catch {
+        erreurs++;
+      }
+    }
+
+    showToast(`✅ ${succes} importé(s), ❌ ${erreurs} erreur(s)`, succes > 0 ? "success" : "error");
+    chargerCSV();
+  }
+
+  function showToast(message, type = "success") {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => toast.classList.remove("show"), 4000);
+  }
+  </script>
+
+</body>
+</html>

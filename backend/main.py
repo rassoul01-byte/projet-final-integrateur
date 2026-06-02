@@ -55,3 +55,4 @@ def dashboard():
 @app.get("/invalides")
 def invalides_page():
     return FileResponse(os.path.join(FRONTEND_DIR, "invalides.html"))
+

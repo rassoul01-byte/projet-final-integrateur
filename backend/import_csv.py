@@ -1,3 +1,7 @@
+# =============================================================
+# import_csv.py — Import des données depuis donnees_propres.csv
+# Les données importées sont marquées source='JSON'
+# =============================================================
 
 import csv
 import ast
@@ -34,19 +38,33 @@ def inserer_etudiant(cursor, row):
     matieres = []
     for nom_mat, data in notes_dict.items():
         matieres.append({
-            "nom": nom_mat,
+            "nom":         nom_mat,
             "note_examen": float(data.get("examen", 0)),
-            "moyenne": float(data.get("moyenne", 0)),
-            "devoirs": [float(n) for n in data.get("devoirs", [])],
+            "moyenne":     float(data.get("moyenne", 0)),
+            "devoirs":     [float(n) for n in data.get("devoirs", [])],
         })
-    moyenne_generale = round(sum(m["moyenne"] for m in matieres) / len(matieres), 2) if matieres else 0.0
+    moyenne_generale = round(
+        sum(m["moyenne"] for m in matieres) / len(matieres), 2
+    ) if matieres else 0.0
     classe_id = get_or_create_classe(cursor, row["classe"].strip())
+
     cursor.execute("""
-        INSERT INTO etudiants (numero, code, prenom, nom, date_naissance, classe_id, moyenne_generale)
-        VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
-    """, (row["numero"].strip(), row["code"].strip(), row["prenom"].strip(),
-          row["nom"].strip(), parse_date(row.get("date_naissance", "")), classe_id, moyenne_generale))
+        INSERT INTO etudiants
+            (numero, code, prenom, nom, date_naissance,
+             classe_id, moyenne_generale, source)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, 'JSON')
+        RETURNING id
+    """, (
+        row["numero"].strip(),
+        row["code"].strip(),
+        row["prenom"].strip(),
+        row["nom"].strip(),
+        parse_date(row.get("date_naissance", "")),
+        classe_id,
+        moyenne_generale,
+    ))
     etudiant_id = cursor.fetchone()["id"]
+
     for mat in matieres:
         cursor.execute("""
             INSERT INTO matieres (etudiant_id, nom, note_examen, moyenne)
@@ -54,7 +72,10 @@ def inserer_etudiant(cursor, row):
         """, (etudiant_id, mat["nom"], mat["note_examen"], mat["moyenne"]))
         matiere_id = cursor.fetchone()["id"]
         for note in mat["devoirs"]:
-            cursor.execute("INSERT INTO notes_devoir (matiere_id, note) VALUES (%s, %s)", (matiere_id, note))
+            cursor.execute(
+                "INSERT INTO notes_devoir (matiere_id, note) VALUES (%s, %s)",
+                (matiere_id, note)
+            )
 
 def importer():
     conn = get_connection()
@@ -62,6 +83,7 @@ def importer():
     inseres = 0
     ignores = 0
     erreurs = 0
+
     try:
         with open(CSV_PATH, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -71,7 +93,6 @@ def importer():
                     ignores += 1
                     continue
                 if etudiant_existe(cursor, numero):
-                    print(f"  [SKIP] {numero}")
                     ignores += 1
                     continue
                 try:
@@ -89,10 +110,11 @@ def importer():
     finally:
         cursor.close()
         conn.close()
+
     print()
     print("=" * 40)
-    print(f"  Inseres  : {inseres}")
-    print(f"  Ignores  : {ignores}")
+    print(f"  Insérés  : {inseres}")
+    print(f"  Ignorés  : {ignores}")
     print(f"  Erreurs  : {erreurs}")
     print("=" * 40)
 
